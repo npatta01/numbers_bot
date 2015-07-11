@@ -29,6 +29,13 @@ class MovieDetailsItem(scrapy.Item):
 class MovieRevenueItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
+
     title = scrapy.Field()
-    link = scrapy.Field()
-    desc = scrapy.Field()
+    date = scrapy.Field()
+    rank = scrapy.Field()
+    gross = scrapy.Field()
+    change = scrapy.Field()
+    num_theaters = scrapy.Field()
+    avg_theaters_income = scrapy.Field()
+    total_gross = scrapy.Field()
+    days_gross = scrapy.Field()
