@@ -9,8 +9,10 @@ import scrapy
 
 
 class MovieDetailsItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
+    """
+    Details of a movie
+    """
+
     title = scrapy.Field()
     synopsis = scrapy.Field()
     budget = scrapy.Field()
@@ -27,8 +29,9 @@ class MovieDetailsItem(scrapy.Item):
 
 
 class MovieRevenueItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
+    """
+    Revenue for a day in a movie's showing
+    """
 
     title = scrapy.Field()
     date = scrapy.Field()

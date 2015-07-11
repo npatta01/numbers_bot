@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
-import scrapy
-from scrapy.spiders import CrawlSpider, Rule
-from scrapy.linkextractors import LinkExtractor
-from movies.items import MovieDetailsItem, MovieRevenueItem
 import urlparse
+
+import scrapy
+
+from movies.items import MovieDetailsItem, MovieRevenueItem
 
 
 class TheNumbersSpider(scrapy.Spider):
-    name = "numbers"
-    allowed_domains = ["the-numbers.com"]
+    """
+    Bot for the number sits
+    """
+
+    name = "numbers"  # bot name used in command line
+    allowed_domains = ["the-numbers.com"]  # only allow following links in this domain
+
     # start_urls = (
     #   'http://www.the-numbers.com/',
     #    "http://www.the-numbers.com/movie/Jurassic-World#tab=summary"
@@ -32,13 +37,20 @@ class TheNumbersSpider(scrapy.Spider):
         # yield scrapy.Request("http://www.the-numbers.com/movies/year/2014", self.parse_movies_in_year)
         # yield scrapy.Request("http://www.the-numbers.com/movie/Terminator-Genisys#tab=summary", self.parse_movie_summary)
 
-        min_year = 2000
-        max_year = 2015
+        min_year = 2000  # year to start from
+        max_year = 2015  # yeat to end from
 
+        # create the link for movies page for that year
         for year in range(min_year, max_year + 1):
             yield scrapy.Request("http://www.the-numbers.com/movies/year/%s" % (year), self.parse_movies_in_year)
 
     def parse_movie_box_office(self, response, movie_title):
+        """
+        For a given url of a movie, parse the movie revenue page
+        :param response:
+        :param movie_title:
+        :return: list of Movie Revenue item
+        """
         self.logger.info('Parsing movie box office details from  %s', response.url)
 
         daily_tbl = response.xpath("(//*[@id='box_office_chart'])[1]")
@@ -76,7 +88,13 @@ class TheNumbersSpider(scrapy.Spider):
         return movie_revenues
 
     def __budget_column_helper(self, selector_elem, idx, is_a=False):
-
+        """
+        Parse a column in the movie budget table
+        :param selector_elem:
+        :param idx:
+        :param is_a: is the column an a tag
+        :return:
+        """
         xpath_query = "table//td[%i]/text()" % (idx)
 
         if is_a:
@@ -88,9 +106,6 @@ class TheNumbersSpider(scrapy.Spider):
 
     def parse_movie_summary(self, response):
         self.logger.debug('Parsing movie %s', response.url)
-        # financials_tab_url = response.url + '#tab=box-office'
-        # self.logger.info('Parsing movie %s', financials_tab_url)
-        # yield scrapy.Request(financials_tab_url, callback=self.parse_movie_box_office)
 
         title = response.xpath("//h1[@itemprop='name']/text()").extract()[0]
 
@@ -102,8 +117,6 @@ class TheNumbersSpider(scrapy.Spider):
             synopsis = ''
 
         movie_detail_tbl = content.xpath("(//h2[text() ='Movie Details']/following::table)[1]")
-        # movie_dtl_tbl
-
 
         budget = self.get_content(movie_detail_tbl, 'Budget')
 
@@ -137,35 +150,27 @@ class TheNumbersSpider(scrapy.Spider):
         mdetail['production_companies'] = production_companies
         mdetail['synopsis'] = synopsis
 
-        yield mdetail
+        yield mdetail  # parsed movie detail
 
         movie_revenues = self.parse_movie_box_office(response, title)
 
         for item in movie_revenues:
             yield item
 
-    # def parse_movie_response(self,response):
-    #     self.logger.info('Parsing movie box info%s', response.url)
-    #     financials_tab_url = response.url + '#tab=box-office'
-    #     self.logger.info('Parsing movie %s', financials_tab_url)
-    #     # yield scrapy.Request(financials_tab_url, callback=self.parse_movie_box_office)
-    #
-    #     title = response.xpath("//h1[@itemprop='name']/text()").extract()
-    #
-    #     content = response.xpath('//*[@id="summary"]')
-    #
-    #     try:
-    #         synopsis = content.xpath("//h2[text() ='Synopsis']/following::p[1]/text()").extract()[0]
-    #     except:
-    #         synopsis = ''
-    #
-    #     movie_detail_tbl = content.xpath("(//h2[text() ='Movie Details']/following::table)[1]")
-    #     # movie_dtl_tbl
-    #     yield mdetail
-
-
     def get_content(self, selector_elem, field, elem_type=None):
-        # xpath_val = "(//tr/td[b[contains(text(),'%s')]]/following::td/text())[1]" % (field)
+        """
+        get the value in the following column that contains the text 'field'
+        In the example below will return 'value'
+
+        <tr>
+            <td><b>Field:</b></td>
+            <td>value</td>
+        </tr>
+        :param selector_elem:
+        :param field:
+        :param elem_type:
+        :return:
+        """
         xpath_val = "(//tr/td[b[contains(text(),'%s')]]/following::td)[1]" % (field)
 
         try:
@@ -182,10 +187,13 @@ class TheNumbersSpider(scrapy.Spider):
         return val
 
     def parse_movies_in_year(self, response):
+        """
+        Parse all movie link for the page which is for a year
+        :param response:
+        :return:
+        """
+
         self.logger.info('Parsing movies in link %s', response.url)
-
-        # all_movie_links = response.xpath("//table//a[starts-with(@href,'/movie')]/@href").extract()
-
         all_movie_links = response.xpath("//table/tr/td[2]//a/@href").extract()
 
         self.logger.info('There are %s movies in %s', (len(all_movie_links), response.url))

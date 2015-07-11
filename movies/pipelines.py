@@ -5,6 +5,10 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
+
+## Based on sample code
+## https://github.com/JMSCHKU/LegcoCouncilVotes/blob/master/legcovotes/pipelines.py
+
 from scrapy import signals
 from scrapy.xlib.pydispatch import dispatcher
 from scrapy.contrib.exporter import CsvItemExporter
@@ -16,6 +20,10 @@ def item_type(item):
 
 
 class MultiCSVItemPipeline(object):
+    """
+    Save each item type in its own csv file
+    """
+
     SaveTypes = ['moviedetails', 'movierevenue']
 
     save_path = os.path.join("data", "csv")
@@ -24,6 +32,7 @@ class MultiCSVItemPipeline(object):
         dispatcher.connect(self.spider_opened, signal=signals.spider_opened)
         dispatcher.connect(self.spider_closed, signal=signals.spider_closed)
 
+        # create path if it does not exist
         if not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
 
