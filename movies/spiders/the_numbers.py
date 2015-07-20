@@ -53,23 +53,30 @@ class TheNumbersSpider(scrapy.Spider):
         """
         self.logger.info('Parsing movie box office details from  %s', response.url)
 
-        daily_tbl = response.xpath("(//*[@id='box_office_chart'])[1]")
+        
+        
+        tables= response.xpath("//*[@id='box_office_chart']")
+        
+        if len(tables)>=2:
+            weekend_tbl = response.xpath("(//*[@id='box_office_chart'])[2]")
+        else:
+            weekend_tbl = response.xpath("(//*[@id='box_office_chart'])[1]")
+        
+        dates_col = self.__budget_column_helper(weekend_tbl, 1, is_a=True)
 
-        dates_col = self.__budget_column_helper(daily_tbl, 1, is_a=True)
+        rank_col = self.__budget_column_helper(weekend_tbl, 2)
 
-        rank_col = self.__budget_column_helper(daily_tbl, 2)
+        gross_col = self.__budget_column_helper(weekend_tbl, 3)
 
-        gross_col = self.__budget_column_helper(daily_tbl, 3)
+        change_col = self.__budget_column_helper(weekend_tbl, 4)
 
-        change_col = self.__budget_column_helper(daily_tbl, 4)
+        num_theaters_col = self.__budget_column_helper(weekend_tbl, 5)
 
-        num_theaters_col = self.__budget_column_helper(daily_tbl, 5)
+        avg_theaters_income_col = self.__budget_column_helper(weekend_tbl, 6)
 
-        avg_theaters_income_col = self.__budget_column_helper(daily_tbl, 6)
+        total_gross_col = self.__budget_column_helper(weekend_tbl, 7)
 
-        total_gross_col = self.__budget_column_helper(daily_tbl, 7)
-
-        days_gross_col = self.__budget_column_helper(daily_tbl, 8)
+        days_gross_col = self.__budget_column_helper(weekend_tbl, 8)
 
         movie_revenues = []
         for i in range(len(dates_col)):
